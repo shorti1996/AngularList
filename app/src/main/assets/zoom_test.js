@@ -19,7 +19,10 @@ var touches = 0;
 // }
 
 $(document).ready(function() {
-	var scroll_zoom = new ScrollZoom($('.zoomer'), 4, 0.5);
+	// var scroll_zoom = new ScrollZoom($('.zoomer'), 4, 0.5);
+  $('.zoomer').each(function() {
+    var croll_zoom = new ScrollZoom($(this), 4, 0.5);
+  })
 });
 
 
@@ -41,12 +44,16 @@ function ScrollZoom(container, max_scale, factor) {
     // }
 
     if (ev.targetTouches.length == 2) {
+      target = $(ev.targetTouches[0].target);
+      container = target.parent();
+
       var touchTarget = $(event.targetTouches[0].target);
 
-
+      var midpointPage = midpoint({x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY},
+        {x: event.targetTouches[1].pageX, y: event.targetTouches[1].pageY});
   		var offset = container.offset();
-  		zoom_point.x = event.targetTouches[0].pageX - offset.left;
-  		zoom_point.y = event.targetTouches[0].pageY - offset.top;
+  		zoom_point.x = midpointPage.x - offset.left;
+  		zoom_point.y = midpointPage.y - offset.top;
 
   		// e.preventDefault();
   		var delta = 0.1;
@@ -84,8 +91,7 @@ function ScrollZoom(container, max_scale, factor) {
 	function update(){
 		target.css('transform',/*'translate('+(pos.x)+'px,'+(pos.y)+'px)' +*/ ' scale('+scale+','+scale+')');
     container.scrollLeft(-pos.x);
-    var targetBounds = target.getBoundingClientRect();
-    // container.css("height", targetBounds.height);
+    container.css("height", $(".content", container)[0].getBoundingClientRect().height)
 	}
 }
 
