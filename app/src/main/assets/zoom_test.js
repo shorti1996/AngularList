@@ -21,7 +21,7 @@ var touches = 0;
 $(document).ready(function() {
 	// var scroll_zoom = new ScrollZoom($('.zoomer'), 4, 0.5);
   $('.zoomer').each(function() {
-    var croll_zoom = new ScrollZoom($(this), 4, 0.5);
+    var croll_zoom = new ScrollZoom($(this), 5, 0.01);
   })
 });
 
@@ -33,15 +33,34 @@ function ScrollZoom(container, max_scale, factor) {
 	var zoom_target = {x:0, y:0};
 	var zoom_point = {x:0, y:0}
 	var scale = 1;
+  var pinching = false;
+  var lastDistBetweenTouches = 0;
 	target.css('transform-origin','0 0');
 	// target.on("mousewheel DOMMouseScroll", scrolled);
   target.on("touchmove", scrolled);
+  target.on("touchstart", touchStart);
+  target.on("touchend", touchEnd);
+
+  function touchStart(ev) {
+    if (ev.targetTouches.length == 2) {
+      pinching = true;
+      console.log("pinching");
+    }
+  }
+
+  function touchEnd(ev) {
+    if (ev.targetTouches.length != 2) {
+      pinching = false;
+      lastDistBetweenTouches = 0;
+      console.log("touchEnd");
+    }
+  }
 
 	function scrolled(ev){
 
-    // if (ev.targetTouches.length == 1) {
-    //   return;
-    // }
+    if (!pinching) {
+      return;
+    }
 
     if (ev.targetTouches.length == 2) {
       target = $(ev.targetTouches[0].target);
@@ -56,8 +75,16 @@ function ScrollZoom(container, max_scale, factor) {
   		zoom_point.y = midpointPage.y - offset.top;
 
   		// e.preventDefault();
-  		var delta = 0.1;
-      delta = Math.max(-1, Math.min(1, delta)); // cap the delta to [-1,1] for cross browser consistency
+      var dist = Math.hypot(
+        ev.touches[0].pageX - ev.touches[1].pageX,
+        ev.touches[0].pageY - ev.touches[1].pageY);
+      if (lastDistBetweenTouches == 0) {
+        var delta = 0;
+      } else {
+        var delta = dist - lastDistBetweenTouches;
+      }
+      lastDistBetweenTouches = dist;
+      // delta = Math.max(-1, Math.min(1, delta)); // cap the delta to [-1,1] for cross browser consistency
 
       // determine the point on where the slide is zoomed in
       // zoom_target.x = (zoom_point.x - pos.x) / scale;
