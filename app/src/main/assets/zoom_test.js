@@ -31,10 +31,11 @@ function ScrollZoom(container, max_scale, factor) {
 	var size = {w:target.width(), h:target.height()};
 	var pos = {x:0, y:0};
 	var zoom_target = {x:0, y:0};
-	var zoom_point = {x:0, y:0}
+	var zoom_point = {x:0, y:0};
 	var scale = 1;
   var pinching = false;
   var lastDistBetweenTouches = 0;
+  var midpointPage = {x: 0, y: 0};
 	target.css('transform-origin','0 0');
 	// target.on("mousewheel DOMMouseScroll", scrolled);
   target.on("touchmove", scrolled);
@@ -44,7 +45,7 @@ function ScrollZoom(container, max_scale, factor) {
   function touchStart(ev) {
     if (ev.targetTouches.length == 2) {
       pinching = true;
-      console.log("pinching");
+      // console.log("pinching");
     }
   }
 
@@ -52,7 +53,8 @@ function ScrollZoom(container, max_scale, factor) {
     if (ev.targetTouches.length != 2) {
       pinching = false;
       lastDistBetweenTouches = 0;
-      console.log("touchEnd");
+      midpointPage = {x: 0, y: 0};
+      // console.log("not pinching");
     }
   }
 
@@ -63,13 +65,16 @@ function ScrollZoom(container, max_scale, factor) {
     }
 
     if (ev.targetTouches.length == 2) {
-      target = $(ev.targetTouches[0].target);
-      container = target.parent();
+      // target = $(ev.targetTouches[0].target);
+      // container = target.parent();
 
       var touchTarget = $(event.targetTouches[0].target);
 
-      var midpointPage = midpoint({x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY},
-        {x: event.targetTouches[1].pageX, y: event.targetTouches[1].pageY});
+      if (midpointPage.x == 0 && midpointPage.y == 0) {
+        midpointPage = midpoint({x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY},
+          {x: event.targetTouches[1].pageX, y: event.targetTouches[1].pageY});
+      }
+
   		var offset = container.offset();
   		zoom_point.x = midpointPage.x - offset.left;
   		zoom_point.y = midpointPage.y - offset.top;
@@ -102,14 +107,16 @@ function ScrollZoom(container, max_scale, factor) {
 
 
       // Make sure the slide stays in its container area when zooming out
-      if(pos.x>0)
-          pos.x = 0;
-      if(pos.x+size.w*scale<size.w)
-      	pos.x = -size.w*(scale-1);
-      if(pos.y>0)
-          pos.y = 0;
-       if(pos.y+size.h*scale<size.h)
-      	pos.y = -size.h*(scale-1);
+      // if(pos.x>0)
+      //     pos.x = 0;
+      // if(pos.x+size.w*scale<size.w)
+      // 	pos.x = -size.w*(scale-1);
+      // if(pos.y>0)
+      //     pos.y = 0;
+      //  if(pos.y+size.h*scale<size.h)
+      // 	pos.y = -size.h*(scale-1);
+
+      // event.stopPropagation();
 
       update();
     }
@@ -119,6 +126,7 @@ function ScrollZoom(container, max_scale, factor) {
 		target.css('transform',/*'translate('+(pos.x)+'px,'+(pos.y)+'px)' +*/ ' scale('+scale+','+scale+')');
     container.scrollLeft(-pos.x);
     container.css("height", $(".content", container)[0].getBoundingClientRect().height)
+    // console.log("update");
 	}
 }
 
